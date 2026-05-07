@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vorum — Content Schedule</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vorum">
+<meta name="theme-color" content="#261525">
+
+<style>
+/* ── EMBEDDED FONTS ── */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
+
+:root {
+  --bg:            #261525;
+  --bronze:        #C4A882;
+  --bone:          #EDE0C8;
+  --bronze-dim:    rgba(196,168,130,0.13);
+  --bronze-border: rgba(196,168,130,0.3);
+  /* Text hierarchy — all light on dark */
+  --text-primary:  #EDE0C8;        /* bone — headings, tasks */
+  --text-secondary:#D4C3A3;        /* warm mid — day notes, body */
+  --text-tertiary: #B8A88A;        /* muted bronze-bone — tips, meta */
+  --text-dim:      rgba(196,168,130,0.45); /* truly dimmed — protected days, time */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  padding: 52px 22px 90px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 700px; margin: 0 auto; }
+
+/* ── HEADER ── */
+.header { text-align: center; margin-bottom: 48px; }
+
+.wordmark {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.55em;
+  color: var(--bronze);
+  margin-bottom: 20px;
+  display: block;
+}
+
+.header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 400;
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.header-rule {
+  width: 56px; height: 1px;
+  background: var(--bronze);
+  margin: 0 auto 14px;
+  opacity: 0.55;
+}
+
+.header-sub {
+  font-size: 15.5px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* ── TOGGLE ── */
+.toggle-wrap {
+  display: flex;
+  margin-bottom: 44px;
+  border: 1px solid var(--bronze-border);
+}
+
+.toggle-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 17px 12px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  text-transform: uppercase;
+  position: relative;
+  transition: color 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--bronze);
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+}
+
+.toggle-btn.active {
+  background: var(--bronze-dim);
+  color: var(--bronze);
+}
+
+.toggle-btn.active::after { transform: scaleX(1); }
+
+.toggle-divider { width: 1px; background: var(--bronze-border); flex-shrink: 0; }
+
+/* ── PANELS ── */
+.week-panel { display: none; }
+.week-panel.active {
+  display: block;
+  animation: fadeUp 0.28s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.42em;
+  color: var(--bronze);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bronze-border);
+}
+
+/* ── NON-NEGOTIABLES ── */
+.non-neg-block {
+  background: var(--bronze-dim);
+  border: 1px solid var(--bronze-border);
+  border-left: 3px solid var(--bronze);
+  padding: 24px 26px;
+  margin-bottom: 40px;
+}
+
+.non-neg-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: var(--bronze);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(196,168,130,0.12);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.checkbox-item:last-child { border-bottom: none; padding-bottom: 0; }
+.checkbox-item:first-of-type { padding-top: 0; }
+.checkbox-item input[type="checkbox"] { display: none; }
+
+.custom-check {
+  width: 19px; height: 19px;
+  border: 1px solid var(--bronze);
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  transition: background 0.18s;
+}
+
+.checkbox-item input:checked ~ .custom-check { background: var(--bronze); }
+
+.custom-check::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 6px;
+  width: 5px; height: 9px;
+  border: 2px solid var(--bg);
+  border-top: none; border-left: none;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.checkbox-item input:checked ~ .custom-check::after { opacity: 1; }
+
+.check-label {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.checkbox-item input:checked ~ .custom-check ~ .check-label {
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: rgba(196,168,130,0.35);
+}
+
+/* ── SCHEDULE ── */
+.schedule-block { margin-bottom: 40px; }
+
+.day-card {
+  border-bottom: 1px solid rgba(196,168,130,0.12);
+  padding: 18px 0;
+}
+
+.day-card:first-of-type { border-top: 1px solid rgba(196,168,130,0.12); }
+
+.day-card.protected { opacity: 0.38; }
+
+.day-top {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 7px;
+}
+
+.day-name {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--bronze);
+  min-width: 84px;
+}
+
+.day-time {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.day-task {
+  font-size: 16.5px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  padding-left: 98px;
+}
+
+.day-note {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding-left: 98px;
+  margin-top: 5px;
+  line-height: 1.55;
+}
+
+.day-card.protected .day-task { font-style: italic; }
+
+/* ── TIPS ── */
+.tips-block {
+  border: 1px solid var(--bronze-border);
+  padding: 24px 26px;
+  margin-bottom: 8px;
+}
+
+.tips-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: var(--bronze);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.tip-item {
+  display: flex;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(196,168,130,0.09);
+}
+
+.tip-item:last-child { border-bottom: none; padding-bottom: 0; }
+.tip-item:first-of-type { padding-top: 0; }
+
+.tip-dash {
+  color: var(--bronze);
+  font-size: 15px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.tip-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-style: italic;
+}
+
+/* ── RESET ── */
+.reset-wrap { text-align: right; margin-top: 26px; }
+
+.reset-btn {
+  background: none;
+  border: none;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-transform: uppercase;
+  padding: 6px 0;
+  transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reset-btn:hover, .reset-btn:active { color: var(--bronze); }
+
+/* ── FOOTER ── */
+.footer {
+  text-align: center;
+  padding-top: 52px;
+  margin-top: 52px;
+  border-top: 1px solid var(--bronze-border);
+}
+
+.footer-v {
+  font-family: 'Cinzel', serif;
+  font-size: 26px;
+  color: var(--bronze);
+  letter-spacing: 0.35em;
+  margin-bottom: 10px;
+}
+
+.footer-tag {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 480px) {
+  .day-task, .day-note { padding-left: 0; margin-top: 5px; }
+  .day-top { flex-wrap: wrap; gap: 5px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <span class="wordmark">Vorum</span>
+    <h1>Content Schedule</h1>
+    <div class="header-rule"></div>
+    <p class="header-sub">Every other Monday at 8am. Everything serves that moment.</p>
+  </header>
+
+  <!-- TOGGLE -->
+  <div class="toggle-wrap">
+    <button class="toggle-btn" id="btn-essay">Essay Week</button>
+    <div class="toggle-divider"></div>
+    <button class="toggle-btn" id="btn-prep">Prep Week</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       ESSAY WEEK
+  ═══════════════════════════════════════ -->
+  <div class="week-panel" id="panel-essay">
+
+    <div class="section-label">Non-Negotiables</div>
+    <div class="non-neg-block">
+      <div class="non-neg-title">Complete These — No Exceptions</div>
+
+      <label class="checkbox-item">
+        <input type="checkbox" data-key="essay-nn-1">
+        <div class="custom-check"></div>
+        <span class="check-label">Essay is live Monday at 8am</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" data-key="essay-nn-2">
+        <div class="custom-check"></div>
+        <span class="check-label">Essay announcement posted to Instagram (Tuesday night)</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" data-key="essay-nn-3">
+        <div class="custom-check"></div>
+        <span class="check-label">One carousel live this week — teaser, deduction, or figure</span>
+      </label>
+    </div>
+
+    <div class="section-label">This Week</div>
+    <div class="schedule-block">
+
+      <div class="day-card protected">
+        <div class="day-top">
+          <div class="day-name">Monday</div>
+          <div class="day-time">8am</div>
+        </div>
+        <div class="day-task">Essay publishes. Let it land.</div>
+        <div class="day-note">Arrival day — no content work. Feel it.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-top">
+          <div class="day-name">Tuesday</div>
+          <div class="day-time">9:30–10:30pm</div>
+        </div>
+        <div class="day-task">Essay announcement post for Instagram</div>
+        <div class="day-note">Draft caption, select visual, schedule or post.</div>
+      </div>
+
+      <div class="day-card protected">
+        <div class="day-top">
+          <div class="day-name">Wednesday</div>
+          <div class="day-time">—</div>
+        </div>
+        <div class="day-task">Open — buffer or rest</div>
+        <div class="day-note">Bank this when life runs over elsewhere.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-top">
+          <div class="day-name">Thursday</div>
+          <div class="day-time">9:30–10:30pm</div>
+        </div>
+        <div class="day-task">Essay teaser carousel or Deduction post</div>
+        <div class="day-note">Pull phrases from the published essay, or build a single-word argument. Draft and schedule.</div>
+      </div>
+
+      <div class="day-card protected">
+        <div class="day-top">
+          <div class="day-name">Friday</div>
+          <div class="day-time">—</div>
+        </div>
+        <div class="day-task">Protected. No Vorum.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-top">
+          <div class="day-name">Sat / Sun</div>
+          <div class="day-time">Afternoon (flex)</div>
+        </div>
+        <div class="day-task">Begin next essay — idea capture + honest door in</div>
+        <div class="day-note">Find the thread you can't stop thinking about. Rough outline only — no pressure to write yet.</div>
+      </div>
+
+    </div>
+
+    <div class="section-label">To Remember</div>
+    <div class="tips-block">
+      <div class="tips-title">Essay Week — Keep This In Mind</div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">Monday is arrival. The essay is already live. Let the reader have it before you move to what's next.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">The announcement post should feel like an invitation, not a summary. Don't over-explain the essay.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">Teaser carousel pulls phrases that create weight — not plot. The reader should feel pulled, not told.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">The weekend outline is light work. Find the thread. Don't write it yet — that's next week.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">3–4 Instagram posts is the ceiling this week. If life gets full, the floor is announcement + one carousel.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PREP WEEK
+  ═══════════════════════════════════════ -->
+  <div class="week-panel" id="panel-prep">
+
+    <div class="section-label">Non-Negotiables</div>
+    <div class="non-neg-block">
+      <div class="non-neg-title">Complete These — No Exceptions</div>
+
+      <label class="checkbox-item">
+        <input type="checkbox" data-key="prep-nn-1">
+        <div class="custom-check"></div>
+        <span class="check-label">Essay written and scheduled before Sunday night ends</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" data-key="prep-nn-2">
+        <div class="custom-check"></div>
+        <span class="check-label">Figure or Architecture post drafted and sourced (Tuesday night)</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" data-key="prep-nn-3">
+        <div class="custom-check"></div>
+        <span class="check-label">Essay scheduled in Substack for Monday 8am delivery</span>
+      </label>
+    </div>
+
+    <div class="section-label">This Week</div>
+    <div class="schedule-block">
+
+      <div class="day-card protected">
+        <div class="day-top">
+          <div class="day-name">Monday</div>
+          <div class="day-time">—</div>
+        </div>
+        <div class="day-task">Open — no essay this week</div>
+        <div class="day-note">Breathe. The cycle is in motion.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-top">
+          <div class="day-name">Tuesday</div>
+          <div class="day-time">9:30–10:30pm</div>
+        </div>
+        <div class="day-task">Figure or Architecture post</div>
+        <div class="day-note">Find the primary source first — the figure speaks for themselves, the architect speaks about the work. Image follows. Caption names the standard, not the aesthetics.</div>
+      </div>
+
+      <div class="day-card protected">
+        <div class="day-top">
+          <div class="day-name">Wednesday</div>
+          <div class="day-time">—</div>
+        </div>
+        <div class="day-task">Open — buffer or rest</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-top">
+          <div class="day-name">Thursday</div>
+          <div class="day-time">9:30–10:30pm</div>
+        </div>
+        <div class="day-task">Substack note or standalone Instagram line</div>
+        <div class="day-note">Something quieter. A thought that didn't make the essay. Paid Notebook drafts live here too.</div>
+      </div>
+
+      <div class="day-card protected">
+        <div class="day-top">
+          <div class="day-name">Friday</div>
+          <div class="day-time">—</div>
+        </div>
+        <div class="day-task">Protected. No Vorum.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-top">
+          <div class="day-name">Sat / Sun</div>
+          <div class="day-time">Afternoon (primary)</div>
+        </div>
+        <div class="day-task">Write the essay — primary writing window</div>
+        <div class="day-note">Saturday or Sunday, whichever opens. Enter through the honest door. Follow it inward. Stop before explaining what it means.</div>
+      </div>
+
+    </div>
+
+    <div class="section-label">To Remember</div>
+    <div class="tips-block">
+      <div class="tips-title">Prep Week — Keep This In Mind</div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">The essay is written this weekend. Not outlined, not started — written. Schedule Sunday night as the hard deadline.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">Don't post architecture until you know who made it and why. Find the source first. The image follows.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">Enter through the most honest door — not the most impressive. Personal experience is the engine, not the front door.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">Stop before explaining what it means. The reader arrives at the standard himself — feeling like he's discovering, not being shown.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">History earns its place only when it's the most honest witness. Never a default. The ordinary Tuesday done right is more convincing than Caesar.</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-dash">—</div>
+        <div class="tip-text">2–3 Instagram posts is fine this week. The essay is the output that matters most.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="reset-wrap">
+    <button class="reset-btn" id="reset-btn">Reset Checkboxes</button>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-v">V</div>
+    <div class="footer-tag">Enter Vorum</div>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var LS_WEEK = 'vorum_week';
+
+  // ── Toggle ──────────────────────────────────────────────
+  function activateWeek(week) {
+    ['essay', 'prep'].forEach(function (w) {
+      document.getElementById('panel-' + w).classList.toggle('active', w === week);
+      document.getElementById('btn-' + w).classList.toggle('active', w === week);
+    });
+    try { localStorage.setItem(LS_WEEK, week); } catch (e) {}
+  }
+
+  document.getElementById('btn-essay').addEventListener('click', function () { activateWeek('essay'); });
+  document.getElementById('btn-prep').addEventListener('click',  function () { activateWeek('prep'); });
+
+  // ── Checkboxes ──────────────────────────────────────────
+  document.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    var key = 'vorum_cb_' + cb.getAttribute('data-key');
+
+    // Restore state
+    try { if (localStorage.getItem(key) === '1') cb.checked = true; } catch (e) {}
+
+    // Save on change
+    cb.addEventListener('change', function () {
+      try { localStorage.setItem(key, cb.checked ? '1' : '0'); } catch (e) {}
+    });
+  });
+
+  // ── Reset ────────────────────────────────────────────────
+  document.getElementById('reset-btn').addEventListener('click', function () {
+    document.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      cb.checked = false;
+      try { localStorage.removeItem('vorum_cb_' + cb.getAttribute('data-key')); } catch (e) {}
+    });
+  });
+
+  // ── Init ─────────────────────────────────────────────────
+  var saved = null;
+  try { saved = localStorage.getItem(LS_WEEK); } catch (e) {}
+  activateWeek(saved === 'prep' ? 'prep' : 'essay');
+
+})();
+</script>
+</body>
+</html>
